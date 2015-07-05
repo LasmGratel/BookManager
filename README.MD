@@ -1,1 +1,3 @@
-<07>??<02>??г <03>??? <06>1.75 <07>OK
+BookManager
+===
+Manage your books!
