@@ -16,6 +16,7 @@
  */
 package ml.lasmgratel.bookmanager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import ml.lasmgratel.bookmanager.file.BookFile;
 
@@ -30,9 +31,10 @@ public class Storage
     /**
     * This function init the storage.
     * <p style="color:red">WARNING:PLEASE USE IT AFTER BookFile.init() RUNNED!</p>
+     * @throws java.io.IOException
     * @see ml.lasmgratel.bookmanager.file.BookFile
     */
-    public static void init()
+    public static void init() throws IOException
     {
         bookList=BookFile.getBooks();
     }
@@ -46,9 +48,10 @@ public class Storage
     }
     /**
      * Read data from the file.
+     * @throws java.io.IOException
      * @see ml.lasmgratel.bookmanager.file.BookFile
      */
-    public static void refreshData()
+    public static void refreshData() throws IOException
     {
         init();
     }

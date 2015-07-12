@@ -19,12 +19,14 @@ import java.util.Properties;
 import ml.lasmgratel.bookmanager.Book;
 import com.google.common.collect.Lists;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
 /**
  *
  * @author lasm_
@@ -35,36 +37,43 @@ public class BookFile
     /**
      * The properties of bookfile.
      */
-    public static Properties bookfile;
-
+    public static Properties bookfile=new Properties();
     /**
      * init bookfile
      */
     public static void init()
     {
-        if(new File("data.properties").exists()){
-        try {
-            bookfile.load(FileUtils.openInputStream(new File("data.properties")));
-        } catch (IOException ex) {
-            Logger.getLogger(BookFile.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        if(new File("data.xml").exists())
+        {
+            try {
+                bookfile.loadFromXML(new FileInputStream("data.xml"));
+            } catch (IOException ex) {
+                LogManager.getLogger(BookFile.class.getName()).error(ex);
+            }
         }
         else
         {
             try {
-                new File("data.properties").createNewFile();
+                new File("data.xml").createNewFile();
+                init();
             } catch (IOException ex) {
-                Logger.getLogger(BookFile.class.getName()).log(Level.SEVERE, null, ex);
+                LogManager.getLogger(BookFile.class.getName()).error(ex);
             }
         }
     }
     /**
      * Get book from properties file.
      * @return Book List
+     * @throws java.io.IOException
      */
-    public static ArrayList<Book> getBooks()
+    public static ArrayList<Book> getBooks() throws IOException
     {
         ArrayList<Book> booklist=Lists.newArrayList();
+        if(new FileReader("data.xml").read()==-1)
+        {
+            booklist.add(new Book());
+            return booklist;
+        }
         for(int i=0;i<Integer.parseInt(bookfile.getProperty("amount"));i++)
         {
             Book b=new Book();
@@ -74,7 +83,11 @@ public class BookFile
             b.setAlready_read(Long.parseLong(bookfile.getProperty("book"+String.valueOf(i)+"_already_read")));
             b.setArthur_name(bookfile.getProperty("book"+String.valueOf(i)+"_arthur"));
             b.setName(bookfile.getProperty("book"+String.valueOf(i)+"_name"));
-            b.setPublish_date(Date.valueOf(bookfile.getProperty("book"+String.valueOf(i)+"_publish_date")));
+            try {
+                b.setPublish_date(DateFormat.getInstance().parse(bookfile.getProperty("book"+String.valueOf(i)+"_publish_date")));
+            } catch (ParseException ex) {
+                LogManager.getLogger(BookFile.class.getName()).error(ex);
+            }
             b.setPublisher(bookfile.getProperty("book"+String.valueOf(i)+"_publisher"));
             booklist.add(b);
         }
@@ -86,12 +99,12 @@ public class BookFile
      */
     public static void writeBooks(ArrayList<Book> booklist)
     {
-        File f=new File("data.properties");
+        File f=new File("data.xml");
         f.delete();
         try {
             f.createNewFile();
         } catch (IOException ex) {
-            Logger.getLogger(BookFile.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(BookFile.class.getName()).error(ex);
         }
         for(int i=0;i<booklist.size();i++)
         {
@@ -103,6 +116,11 @@ public class BookFile
             bookfile.setProperty("book"+String.valueOf(i)+"_name",String.valueOf(booklist.get(i).getName()));
             bookfile.setProperty("book"+String.valueOf(i)+"_publish_date",String.valueOf(booklist.get(i).getPublish_date()));
             bookfile.setProperty("book"+String.valueOf(i)+"_publisher",String.valueOf(booklist.get(i).getPublisher()));
+        }
+        try {
+            bookfile.storeToXML(new FileOutputStream("data.xml"), "no comment");
+        } catch (IOException ex) {
+            LogManager.getLogger(BookFile.class.getName()).error(ex);
         }
     }
 }

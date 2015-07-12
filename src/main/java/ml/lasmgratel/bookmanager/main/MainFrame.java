@@ -17,6 +17,7 @@
 package ml.lasmgratel.bookmanager.main;
 
 import com.google.common.collect.Lists;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import ml.lasmgratel.bookmanager.Book;
@@ -35,17 +36,25 @@ public class MainFrame extends javax.swing.JFrame {
      */
     private static final Logger logger=LogManager.getLogger(MainFrame.class.getName());
     /**
+     * Current Book ID.
+     */
+    private int currentBook=0;
+    /**
      * Creates new form MainFrame
      */
     public MainFrame() {
         info("Init the BookFile");
         BookFile.init();
         info("Init the Storage");
-        Storage.init();
-        info("Refresh the Frame");
-        refresh();
+        try {
+            Storage.init();
+        } catch (IOException ex) {
+           error(ex.getLocalizedMessage());
+        }
         info("Creating the Frame...");
         initComponents();
+        info("Refresh the Frame");
+        refresh();
         info("Creating Complete");
     }
     private void info(String log)
@@ -83,7 +92,10 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem8 = new javax.swing.JMenuItem();
-        SpinnerBook = new javax.swing.JSpinner();
+        jMenuItem9 = new javax.swing.JMenuItem();
+        popupMenu1 = new java.awt.PopupMenu();
+        jPopupMenu1 = new javax.swing.JPopupMenu();
+        jDialog1 = new javax.swing.JDialog();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -98,29 +110,40 @@ public class MainFrame extends javax.swing.JFrame {
         SpinnerPage = new javax.swing.JSpinner();
         SpinnerDate = new javax.swing.JSpinner();
         ButNew = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        ListBook = new javax.swing.JList();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem10 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem7 = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
 
         jMenuItem4.setText("jMenuItem4");
 
         jMenuItem8.setText("jMenuItem8");
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        jMenuItem9.setText("jMenuItem9");
 
-        SpinnerBook.setModel(new javax.swing.SpinnerListModel(new String[] {"0 项", "1 项", "2 项", "3 项"}));
-        SpinnerBook.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                SpinnerBookStateChanged(evt);
-            }
-        });
+        popupMenu1.setLabel("popupMenu1");
+
+        javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
+        jDialog1.getContentPane().setLayout(jDialog1Layout);
+        jDialog1Layout.setHorizontalGroup(
+            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jDialog1Layout.setVerticalGroup(
+            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Book Manager");
 
         jLabel1.setText("Name");
 
@@ -173,6 +196,19 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        ListBook.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "You should refresh" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        ListBook.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        ListBook.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                ListBookValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(ListBook);
+
         jMenu1.setText("File");
 
         jMenuItem1.setText("Load");
@@ -193,6 +229,14 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem3);
+
+        jMenuItem10.setText("Refresh");
+        jMenuItem10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem10ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem10);
 
         jMenuBar1.add(jMenu1);
 
@@ -217,24 +261,15 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu2);
 
-        jMenu3.setText("Refresh");
-        jMenu3.setToolTipText("If textbox doesn't show anything,please use it to refresh the program.");
-        jMenu3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenu3ActionPerformed(evt);
-            }
-        });
-        jMenuBar1.add(jMenu3);
-
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(SpinnerBook)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel5)
                     .addComponent(jLabel4)
@@ -256,7 +291,7 @@ public class MainFrame extends javax.swing.JFrame {
                                         .addComponent(SpinnerDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(TextPublisher, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(SpinnerPage, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 87, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(ButCancel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(ButEdit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -267,8 +302,7 @@ public class MainFrame extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(SpinnerBook, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(32, 32, 32)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(TextName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -293,6 +327,10 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(ButCancel)
                     .addComponent(SpinnerPage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 21, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1)
+                .addContainerGap())
         );
 
         pack();
@@ -341,7 +379,7 @@ public class MainFrame extends javax.swing.JFrame {
         temp.setPublish_date((Date)SpinnerDate.getValue());
         temp.setName(TextName.getText());
         temp.setPublisher(TextPublisher.getText());
-        Storage.bookList.set((int)((Book)SpinnerBook.getValue()).getId(), temp);
+        Storage.bookList.set(ListBook.getSelectedIndex(), temp);
         Storage.writeData();
         ButEdit.setEnabled(true);
         ButSave.setEnabled(false);
@@ -359,20 +397,18 @@ public class MainFrame extends javax.swing.JFrame {
         refresh();
     }//GEN-LAST:event_ButNewActionPerformed
 
-    private void SpinnerBookStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_SpinnerBookStateChanged
-        info("User change the book spinner");
-        Book temp=(Book)SpinnerBook.getValue();
-        TextAuthor.setText(temp.getArthur_name());
-        TextName.setText(temp.getName());
-        TextPublisher.setText(temp.getPublisher());
-        SpinnerDate.setValue(temp.getPublish_date());
-        SpinnerPage.setValue((int)temp.getPage());
-    }//GEN-LAST:event_SpinnerBookStateChanged
+    private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed
+        Book currentBook=Storage.bookList.get(ListBook.getSelectedIndex());
+        SpinnerDate.setValue(currentBook.getPublish_date());
+        SpinnerPage.setValue(currentBook.getPage());
+        TextName.setText(currentBook.getName());
+        TextAuthor.setText(currentBook.getArthur_name());
+        TextPublisher.setText(currentBook.getPublisher());
+    }//GEN-LAST:event_jMenuItem10ActionPerformed
 
-    private void jMenu3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu3ActionPerformed
-        // TODO add your handling code here:
+    private void ListBookValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_ListBookValueChanged
         refresh();
-    }//GEN-LAST:event_jMenu3ActionPerformed
+    }//GEN-LAST:event_ListBookValueChanged
 
     /**
      * @param args the command line arguments
@@ -409,23 +445,26 @@ public class MainFrame extends javax.swing.JFrame {
     {
         info("User refresh the frame");
         ArrayList<String> bookNameList=Lists.newArrayList();
+        if(Storage.bookList.get(0).getName()==null) return;
         for (Book book : Storage.bookList)
         {
             bookNameList.add(book.getName());
         }
-        SpinnerBook.setValue(bookNameList);
+        ListBook.setListData(bookNameList.toArray());
+        
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ButCancel;
     private javax.swing.JButton ButEdit;
     private javax.swing.JButton ButNew;
     private javax.swing.JButton ButSave;
-    private javax.swing.JSpinner SpinnerBook;
+    private javax.swing.JList ListBook;
     private javax.swing.JSpinner SpinnerDate;
     private javax.swing.JSpinner SpinnerPage;
     private javax.swing.JTextField TextAuthor;
     private javax.swing.JTextField TextName;
     private javax.swing.JTextField TextPublisher;
+    private javax.swing.JDialog jDialog1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -433,9 +472,9 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
@@ -443,5 +482,9 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItem8;
+    private javax.swing.JMenuItem jMenuItem9;
+    private javax.swing.JPopupMenu jPopupMenu1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private java.awt.PopupMenu popupMenu1;
     // End of variables declaration//GEN-END:variables
 }
